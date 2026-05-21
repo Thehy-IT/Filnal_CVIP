@@ -54,7 +54,6 @@ Filnal_CVIP/
 │   └── inference.py          # Script Inference dùng cho môi trường Web/Test
 ├── main.py                   # Điểm neo Entry-point (CLI) chạy toàn dự án
 ├── requirements.txt          # Các thư viện phụ thuộc
-├── bao_cao_bai_tap_lon.md    # Tài liệu báo cáo (nội bộ)
 └── README.md                 # Tài liệu hướng dẫn sử dụng này
 ```
 
