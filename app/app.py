@@ -136,17 +136,17 @@ with col_display:
                     
                     with res_col1:
                         st.markdown("<div class='result-box'>", unsafe_allow_html=True)
-                        st.image(original_image.resize((sys_image_size, sys_image_size)), caption="Ảnh Gốc Lâm Sàng", use_column_width=True)
+                        st.image(original_image.resize((sys_image_size, sys_image_size)), caption="Ảnh Gốc Lâm Sàng", use_container_width=True)
                         st.markdown("</div>", unsafe_allow_html=True)
                         
                     with res_col2:
                         st.markdown("<div class='result-box'>", unsafe_allow_html=True)
-                        st.image(img_det, caption="Phát Hiện (Faster R-CNN)", use_column_width=True)
+                        st.image(img_det, caption="Phát Hiện (Faster R-CNN)", use_container_width=True)
                         st.markdown("</div>", unsafe_allow_html=True)
                         
                     with res_col3:
                         st.markdown("<div class='result-box'>", unsafe_allow_html=True)
-                        st.image(img_seg, caption="Phân Vùng (U-Net)", use_column_width=True)
+                        st.image(img_seg, caption="Phân Vùng (U-Net)", use_container_width=True)
                         st.markdown("</div>", unsafe_allow_html=True)
                         
                     # Hiển thị thông số kỹ thuật (Giả lập)

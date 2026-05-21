@@ -15,19 +15,21 @@ class MedicalInferencePipeline:
         
         # 1. Tải mô hình Detection
         self.det_model = get_detection_model(num_classes=2)
-        if torch.cuda.is_available():
-            self.det_model.load_state_dict(torch.load(det_weight_path))
+        det_checkpoint = torch.load(det_weight_path, map_location=self.device)
+        if isinstance(det_checkpoint, dict) and 'model_state_dict' in det_checkpoint:
+            self.det_model.load_state_dict(det_checkpoint['model_state_dict'])
         else:
-            self.det_model.load_state_dict(torch.load(det_weight_path, map_location='cpu'))
+            self.det_model.load_state_dict(det_checkpoint)
         self.det_model.to(self.device)
         self.det_model.eval()
 
         # 2. Tải mô hình Segmentation
         self.seg_model = UNet(img_ch=3, output_ch=1)
-        if torch.cuda.is_available():
-            self.seg_model.load_state_dict(torch.load(seg_weight_path))
+        seg_checkpoint = torch.load(seg_weight_path, map_location=self.device)
+        if isinstance(seg_checkpoint, dict) and 'model_state_dict' in seg_checkpoint:
+            self.seg_model.load_state_dict(seg_checkpoint['model_state_dict'])
         else:
-            self.seg_model.load_state_dict(torch.load(seg_weight_path, map_location='cpu'))
+            self.seg_model.load_state_dict(seg_checkpoint)
         self.seg_model.to(self.device)
         self.seg_model.eval()
 
@@ -73,7 +75,7 @@ class MedicalInferencePipeline:
                 
                 # Vẽ Bounding Box (Màu Đỏ y tế)
                 cv2.rectangle(img_bbox, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
-                cv2.putText(img_bbox, f"Tổn thương: {scores[0]:.2f}", (x_min, max(0, y_min - 10)),
+                cv2.putText(img_bbox, f"vung bi thuong: {scores[0]:.2f}", (x_min, max(0, y_min - 10)),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
                 # --- 2. SEGMENTATION PHASE (TWO-STAGE) ---
