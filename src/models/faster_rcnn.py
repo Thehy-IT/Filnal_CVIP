@@ -1,8 +1,10 @@
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection import FasterRCNN_ResNet50_FPN_Weights
+from typing import Optional
 
-def get_detection_model(num_classes: int = 2):
+
+def get_detection_model(num_classes: int = 2, detections_per_img: Optional[int] = None):
     """
     Khởi tạo mô hình Faster R-CNN với ResNet50-FPN backbone.
     Args:
@@ -18,5 +20,7 @@ def get_detection_model(num_classes: int = 2):
     
     # Thay thế phần head dự đoán bằng một head mới phù hợp với số class của ta
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+    if detections_per_img is not None:
+        model.roi_heads.detections_per_img = int(detections_per_img)
     
     return model

@@ -1,79 +1,68 @@
-import torch
 import math
 import sys
-from tqdm import tqdm
+
+import torch
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from tqdm import tqdm
 
-def train_one_epoch_det(model, optimizer, data_loader, device, epoch):
-    """
-    Huấn luyện Faster R-CNN trong 1 Epoch
-    """
-    model.train() # Chuyển model sang chế độ train (Rất quan trọng)
-    total_loss = 0
-    
-    # Thanh tiến trình chuyên nghiệp
+
+def train_one_epoch_det(model, optimizer, data_loader, device, epoch, scaler=None, use_amp: bool = False):
+    model.train()
+    total_loss = 0.0
+
     loop = tqdm(data_loader, desc=f"Epoch {epoch} [Detection Train]", leave=True)
-    
-    for images, targets in loop:
-        # Đưa dữ liệu lên GPU/CPU
-        images = list(image.to(device) for image in images)
-        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        
-        # 1. Truyền tiến (Forward pass)
-        # Faster R-CNN tự động tính loss khi ở chế độ model.train()
-        loss_dict = model(images, targets)
-        
-        # Tính tổng các loại loss (classifier, box_reg, objectness, rpn_box_reg)
-        losses = sum(loss for loss in loss_dict.values())
-        loss_value = losses.item()
 
-        # Kiểm tra nếu loss bị NaN hoặc Infinity thì dừng ngay lập tức
+    for images, targets in loop:
+        images = [image.to(device, non_blocking=True) for image in images]
+        targets = [{k: v.to(device, non_blocking=True) for k, v in t.items()} for t in targets]
+
+        optimizer.zero_grad(set_to_none=True)
+
+        with torch.amp.autocast('cuda', enabled=use_amp):
+            loss_dict = model(images, targets)
+            losses = sum(loss for loss in loss_dict.values())
+
+        loss_value = losses.item()
         if not math.isfinite(loss_value):
             print(f"\nLoss is {loss_value}, stopping training")
             sys.exit(1)
-            
-        # 2. Truyền ngược (Backward pass)
-        optimizer.zero_grad() # Xóa gradient cũ
-        losses.backward()     # Tính gradient mới
-        optimizer.step()      # Cập nhật trọng số (Weights)
-        
-        total_loss += loss_value
-        
-        # Cập nhật thanh tiến trình
-        loop.set_postfix(loss=loss_value)
-        
-    avg_loss = total_loss / len(data_loader)
-    return avg_loss
 
-def validate_det(model, data_loader, device, epoch):
-    """
-    Đánh giá Faster R-CNN trên tập Validation bằng mAP
-    """
-    model.eval() # Chuyển sang chế độ đánh giá
-    metric = MeanAveragePrecision(box_format='xyxy', iou_type='bbox')
-    
+        if scaler is not None and use_amp:
+            scaler.scale(losses).backward()
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            losses.backward()
+            optimizer.step()
+
+        total_loss += loss_value
+        loop.set_postfix(loss=loss_value)
+
+    return total_loss / len(data_loader)
+
+
+def validate_det(model, data_loader, device, epoch, use_amp: bool = False):
+    model.eval()
+    metric = MeanAveragePrecision(box_format="xyxy", iou_type="bbox")
+
     loop = tqdm(data_loader, desc=f"Epoch {epoch} [Detection Val]", leave=True)
-    
+
     with torch.no_grad():
         for images, targets in loop:
-            images = list(image.to(device) for image in images)
-            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-            
-            # Predict
-            preds = model(images)
-            
-            # Move predictions and targets to CPU to calculate metrics efficiently
+            images = [image.to(device, non_blocking=True) for image in images]
+            targets = [{k: v.to(device, non_blocking=True) for k, v in t.items()} for t in targets]
+
+            with torch.amp.autocast('cuda', enabled=use_amp):
+                preds = model(images)
+
             preds_cpu = [{k: v.cpu() for k, v in p.items()} for p in preds]
             targets_cpu = [{k: v.cpu() for k, v in t.items()} for t in targets]
-            
             metric.update(preds_cpu, targets_cpu)
-            
-    # Calculate mAP
-    print("Đang tính toán mAP (có thể mất thời gian)...")
+
+    print("Dang tinh toan mAP...")
     mAP_dict = metric.compute()
-    mAP_50 = mAP_dict['map_50'].item()
-    mAP_50_95 = mAP_dict['map'].item()
-    
-    metric.reset() # Reset for next epoch
-    
+    mAP_50 = mAP_dict["map_50"].item()
+    mAP_50_95 = mAP_dict["map"].item()
+
+    metric.reset()
     return mAP_50, mAP_50_95

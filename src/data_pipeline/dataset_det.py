@@ -18,15 +18,20 @@ class ISICDetectionDataset(Dataset):
         self.transforms = transforms
         
         # Gom nhóm bounding boxes theo từng file ảnh
-        self.image_groups = self.df.groupby('file_name')
-        self.image_names = list(self.image_groups.groups.keys())
+        self.records = []
+        for img_name, group in self.df.groupby('file_name', sort=False):
+            self.records.append({
+                "file_name": img_name,
+                "boxes": group[['x_min', 'y_min', 'x_max', 'y_max']].to_numpy(dtype="float32"),
+                "labels": group['class_id'].to_numpy(dtype="int64"),
+            })
 
     def __len__(self) -> int:
-        return len(self.image_names)
+        return len(self.records)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
-        img_name = self.image_names[idx]
-        group = self.image_groups.get_group(img_name)
+        record = self.records[idx]
+        img_name = record["file_name"]
         
         img_path = self.img_dir / img_name
         
@@ -35,8 +40,8 @@ class ISICDetectionDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
         # Lấy TẤT CẢ Bounding Boxes của ảnh
-        boxes = group[['x_min', 'y_min', 'x_max', 'y_max']].values.tolist()
-        labels = group['class_id'].values.tolist()
+        boxes = record["boxes"].tolist()
+        labels = record["labels"].tolist()
 
         if self.transforms:
             transformed = self.transforms(image=image, bboxes=boxes, class_labels=labels)

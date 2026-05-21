@@ -1,6 +1,6 @@
 # Hướng Dẫn Chạy Toàn Bộ Dự Án (Execution Guide)
 
-Dự án này là một hệ thống thị giác máy tính trong y tế (CVIP) với hai tác vụ chính là **Phát hiện (Detection)** bằng Faster R-CNN và **Phân vùng (Segmentation)** bằng Attention U-Net trên tập dữ liệu ISIC 2018.
+Dự án này là một hệ thống thị giác máy tính trong y tế (CVIP) với hai tác vụ chính là **Phát hiện (Detection)** bằng Faster R-CNN và **Phân vùng (Segmentation)** bằng U-Net trên tập dữ liệu ISIC 2018.
 
 Dưới đây là thứ tự các bước để chạy toàn bộ dự án từ lúc thiết lập môi trường cho đến khi khởi chạy giao diện web ứng dụng.
 
@@ -47,7 +47,7 @@ python main.py --task train_det
 
 * Trọng số tốt nhất sẽ được lưu tại: `experiments/weights/faster_rcnn_best.pth`
 
-### 3.2. Huấn luyện mô hình Phân vùng (Segmentation - Attention U-Net)
+### 3.2. Huấn luyện mô hình Phân vùng (Segmentation - U-Net)
 
 Mô hình này học cách tạo mask chi tiết cấp độ điểm ảnh cho các vùng tổn thương.
 
@@ -55,7 +55,7 @@ Mô hình này học cách tạo mask chi tiết cấp độ điểm ảnh cho c
 python main.py --task train_seg
 ```
 
-* Trọng số tốt nhất sẽ được lưu tại: `experiments/weights/attention_unet_best.pth`
+* Trọng số tốt nhất sẽ được lưu tại: `experiments/weights/unet_best.pth`
 
 ## 4. Suy Luận & Khởi Chạy Web App (Inference & Deployment)
 

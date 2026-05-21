@@ -6,7 +6,7 @@ from PIL import Image
 
 # Import kiến trúc model
 from src.models.faster_rcnn import get_detection_model
-from src.models.attention_unet import AttentionUNet
+from src.models.unet import UNet
 
 class MedicalInferencePipeline:
     def __init__(self, det_weight_path, seg_weight_path, image_size=512):
@@ -23,7 +23,7 @@ class MedicalInferencePipeline:
         self.det_model.eval()
 
         # 2. Tải mô hình Segmentation
-        self.seg_model = AttentionUNet(img_ch=3, output_ch=1)
+        self.seg_model = UNet(img_ch=3, output_ch=1)
         if torch.cuda.is_available():
             self.seg_model.load_state_dict(torch.load(seg_weight_path))
         else:

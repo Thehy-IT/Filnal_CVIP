@@ -146,7 +146,7 @@ with col_display:
                         
                     with res_col3:
                         st.markdown("<div class='result-box'>", unsafe_allow_html=True)
-                        st.image(img_seg, caption="Phân Vùng (Attention U-Net)", use_column_width=True)
+                        st.image(img_seg, caption="Phân Vùng (U-Net)", use_column_width=True)
                         st.markdown("</div>", unsafe_allow_html=True)
                         
                     # Hiển thị thông số kỹ thuật (Giả lập)
@@ -155,7 +155,7 @@ with col_display:
                     stats_col1, stats_col2 = st.columns(2)
                     stats_col1.write("- Phương pháp phát hiện: Bounding Box (ResNet50-FPN)")
                     stats_col1.write(f"- Ngưỡng tin cậy áp dụng: {confidence_thresh}")
-                    stats_col2.write("- Phương pháp phân vùng: Pixel-level Attention")
+                    stats_col2.write("- Phương pháp phân vùng: Pixel-level Segmentation")
                     stats_col2.write(f"- Độ phân giải xử lý: {sys_image_size} x {sys_image_size} px")
     else:
         st.info("HỆ THỐNG ĐANG CHỜ DỮ LIỆU ĐẦU VÀO. Vui lòng tải ảnh lên ở bảng điều khiển bên trái.")
