@@ -4,7 +4,7 @@ detection:
   img_dir: "data/processed/train/images"
   val_img_dir: "data/processed/val/images"
   batch_size: 4
-  epochs: 3
+  epochs: 50
   lr: 0.0001
   weight_save_path: "experiments/weights/faster_rcnn_best.pth"
   image_size: 512
@@ -23,7 +23,7 @@ segmentation:
   val_img_dir: "data/processed/val/images"
   val_mask_dir: "data/processed/val/masks"
   batch_size: 4
-  epochs: 3
+  epochs: 50
   lr: 0.0005
   weight_save_path: "experiments/weights/unet_best.pth"
   image_size: 512
